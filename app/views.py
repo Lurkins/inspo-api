@@ -1,5 +1,4 @@
 from app import app
-
 from flask_cors import CORS
 from flask import jsonify
 from flask import request
@@ -56,8 +55,8 @@ jwt = JWTManager(app)
 flask_bcrypt = Bcrypt(app)
 app.json_encoder = JSONEncoder
 
-app.config['MONGO_DBNAME'] = 'restdb'
-app.config['MONGO_URI'] = 'mongodb://localhost:27017/restdb'
+# app.config['MONGO_DBNAME'] = 'restdb'
+# app.config['MONGO_URI'] = 'mongodb://localhost:27017/restdb'
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = datetime.timedelta(days=1)
                                    
 mongo = PyMongo(app)
