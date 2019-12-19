@@ -68,12 +68,6 @@ CORS(app, resources={r'/*': {'origins': '*'}})
 def hello():
     return "Welcome to the INSPO API"
 
-#Testing
-@app.route('/test', methods=['GET'])
-@jwt_required
-def test_route():
-    return jsonify('Success!') 
-
 # unauthorized response 
 @jwt.unauthorized_loader
 def unauthorized_response(callback):
@@ -133,16 +127,9 @@ def refresh():
     }
     return jsonify({'ok': True, 'data': ret}), 200
 
-#Testing protected route
-@app.route('/protected', methods=['GET'])
-@jwt_required
-def protected():
-    current_user = get_jwt_identity()
-    return jsonify(logged_in_as=current_user), 200   
-
 # User info: get, update, delete
 @app.route('/users/<username>', methods=['GET', 'DELETE', 'PATCH'])
-# @jwt_required
+@jwt_required
 def user(username):
     ''' route read user '''
     if request.method == 'GET':
@@ -168,19 +155,6 @@ def user(username):
             return jsonify({'ok': True, 'message': 'record updated'}), 200
         else:
             return jsonify({'ok': False, 'message': 'Bad request parameters!'}), 400
-
-#Get all the users
-@app.route('/todo/api/users', methods=['GET'])
-def get_all_users():
-  user = mongo.db.users
-  try:
-    if user.find().count > 0:
-      #Add del the password here
-      return dumps(user.find())
-    else:
-      return jsonify([])
-  except:
-    return "Error fetching the items", 500
 
 #Get a user's items
 @app.route('/todo/api/item/thisuser', methods=['GET'])
@@ -278,6 +252,7 @@ def update_item(item_id):
 
 #Update a item by title - done: true or false
 @app.route('/todo/api/item/complete/<title>', methods=['PUT'])
+@jwt_required
 def update_item_by_title(title):
   item = mongo.db.items
   t = item.find_one({'title' : title})
@@ -293,6 +268,7 @@ def update_item_by_title(title):
 
 #Update a item by id - done: change title, description
 @app.route('/todo/api/item/edit/<ObjectId:item_id>', methods=['PUT'])
+@jwt_required
 def update_item_info(item_id):
   if item_id:
     item = mongo.db.items
@@ -325,6 +301,7 @@ def delete_item(item_id):
 
 #Photo upload
 @app.route('/todo/api/photo/<ObjectId:item_id>', methods=['POST'])
+@jwt_required
 def upload(item_id):
   item = mongo.db.items
   if 'file' in request.files:
@@ -335,5 +312,6 @@ def upload(item_id):
   return jsonify(uploaded)
   
 @app.route('/file/<filename>')
+@jwt_required
 def file(filename):
   return mongo.send_file(filename)
