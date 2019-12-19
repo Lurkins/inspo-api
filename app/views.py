@@ -12,6 +12,7 @@ import json
 from jsonschema import validate
 from jsonschema.exceptions import ValidationError
 from jsonschema.exceptions import SchemaError
+from os import environ
 
 user_schema = {
     "type": "object",
@@ -50,13 +51,11 @@ class JSONEncoder(json.JSONEncoder):
       return json.JSONEncoder.default(self, o)
 
 # Setup the Flask-JWT-Extended extension
-app.config['JWT_SECRET_KEY'] = 'super-secret'  # Change this!
+app.config['JWT_SECRET_KEY'] = environ.get('JWT_SECRET')
 jwt = JWTManager(app)
 flask_bcrypt = Bcrypt(app)
 app.json_encoder = JSONEncoder
 
-# app.config['MONGO_DBNAME'] = 'restdb'
-# app.config['MONGO_URI'] = 'mongodb://localhost:27017/restdb'
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = datetime.timedelta(days=1)
                                    
 mongo = PyMongo(app)
@@ -67,7 +66,7 @@ CORS(app, resources={r'/*': {'origins': '*'}})
 #API Root route
 @app.route("/")
 def hello():
-    return "Welcome to my Python API"
+    return "Welcome to the INSPO API"
 
 #Testing
 @app.route('/test', methods=['GET'])
