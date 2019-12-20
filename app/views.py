@@ -29,10 +29,43 @@ user_schema = {
     "additionalProperties": False
 }
 
+item_schema = {
+    "type": "object",
+    "properties": {
+        "user_id": {
+            "type": "string",
+        },
+        "done": {
+          "type": "boolean",
+        },
+        "description": {
+          "type": "string",
+        },
+        "title": {
+          "type": "string",
+        },
+        "image_name": {
+          "type": "string",
+        },
+    },
+    "required": ["title", "description"],
+    "additionalProperties": False
+}
+
 # validate user
 def validate_user(data):
     try:
         validate(data, user_schema)
+    except ValidationError as e:
+        return {'ok': False, 'message': e}
+    except SchemaError as e:
+        return {'ok': False, 'message': e}
+    return {'ok': True, 'data': data}
+
+# validate item
+def validate_item(data):
+    try:
+        validate(data, item_schema)
     except ValidationError as e:
         return {'ok': False, 'message': e}
     except SchemaError as e:
@@ -215,12 +248,14 @@ def get_one_item(title):
 @app.route('/todo/api/item', methods=['POST'])
 @jwt_required
 def add_item():
-  item = mongo.db.items
-  user = mongo.db.users
-  title = request.json['title']
-  description = request.json['description']
-  done = False
-  if title and description:
+  data = validate_item(request.get_json())
+  if data['ok']:
+    data = data['data']
+    item = mongo.db.items
+    user = mongo.db.users
+    title = data['title']
+    description = data['description']
+    done = False
     current_user = get_jwt_identity()
     user_name = current_user['username']
     user_obj = user.find_one({'username': user_name})
@@ -228,9 +263,9 @@ def add_item():
     item_id = item.insert({'title': title, 'description': description, 'done': done, 'user_id': user_id})
     new_item = item.find_one({'_id': item_id })
     output = {'title' : new_item['title'], 'description' : new_item['description'], 'done': new_item['done']}
-    return jsonify({'result' : output})
+    return jsonify({'ok': True, 'data': output, 'message': 'Item added successfully!'}), 200
   else:
-    return "Error: no item provided", 500
+    return jsonify({'ok': False, 'message': 'Bad request parameters: {}'.format(data['message'])}), 400
 
 #Update a item by id - done: true or false
 @app.route('/todo/api/item/<ObjectId:item_id>', methods=['PUT'])
