@@ -85,16 +85,14 @@ class JSONEncoder(json.JSONEncoder):
 
 # Setup the Flask-JWT-Extended extension
 app.config['JWT_SECRET_KEY'] = environ.get('JWT_SECRET')
+app.config['JWT_ACCESS_TOKEN_EXPIRES']
 jwt = JWTManager(app)
 flask_bcrypt = Bcrypt(app)
 app.json_encoder = JSONEncoder
-
-app.config['JWT_ACCESS_TOKEN_EXPIRES'] = datetime.timedelta(days=1)
-                                   
+                        
 mongo = PyMongo(app)
 
 CORS(app, resources={r'/*': {'origins': '*'}})
-
 
 #API Root route
 @app.route("/")
@@ -117,9 +115,8 @@ def register():
   if data['ok']:
       data = data['data']
       data['password'] = flask_bcrypt.generate_password_hash(data['password'])
-      mongo.db.users.insert_one(data)
-      #use .inseted_id ?
-      user = mongo.db.users.find_one({'username': data['username']}, {"_id": 0})
+      inserted_id = mongo.db.users.insert_one(data).inserted_id
+      user = mongo.db.users.find_one({'_id': inserted_id}, {"_id": 0})
       del user['password']
       access_token = create_access_token(identity=data)
       refresh_token = create_refresh_token(identity=data)
@@ -136,7 +133,7 @@ def auth_user():
     data = validate_user(request.get_json())
     if data['ok']:
         data = data['data']
-        user = mongo.db.users.find_one({'username': data['username']}, {"_id": 0})#What is id 0?
+        user = mongo.db.users.find_one({'username': data['username']}, {"_id": 0})
         if user and flask_bcrypt.check_password_hash(user['password'], data['password']):
             del user['password']
             access_token = create_access_token(identity=data)
@@ -167,6 +164,7 @@ def user(username):
     ''' route read user '''
     if request.method == 'GET':
         data = mongo.db.users.find_one({"username": username})
+        del data['password']
         return jsonify({'ok': True, 'data': data}), 200
 
     data = request.json()
@@ -190,7 +188,7 @@ def user(username):
             return jsonify({'ok': False, 'message': 'Bad request parameters!'}), 400
 
 #Get a user's items
-@app.route('/todo/api/item/thisuser', methods=['GET'])
+@app.route('/inspo/api/item/thisuser', methods=['GET'])
 @jwt_required
 def get_users_items():
   item = mongo.db.items
@@ -208,7 +206,7 @@ def get_users_items():
     return resp
 
 #Get all the items
-@app.route('/todo/api/item', methods=['GET'])
+@app.route('/inspo/api/item', methods=['GET'])
 def get_all_items():
   item = mongo.db.items
   try:
@@ -220,7 +218,7 @@ def get_all_items():
     return "Error fetching the items", 500
 
 #Get a single item by ID
-@app.route('/todo/api/item/id/<ObjectId:item_id>', methods=['GET'])
+@app.route('/inspo/api/item/id/<ObjectId:item_id>', methods=['GET'])
 def get_one_item_by_id(item_id):
   item = mongo.db.items
   try:
@@ -234,7 +232,7 @@ def get_one_item_by_id(item_id):
     return "Error fetching the item", 500
 
 #Get a single item by title
-@app.route('/todo/api/item/<title>', methods=['GET'])
+@app.route('/inspo/api/item/<title>', methods=['GET'])
 def get_one_item(title):
   item = mongo.db.items
   t = item.find_one({'title' : title})
@@ -245,7 +243,7 @@ def get_one_item(title):
   return resp
 
 #Post a single item
-@app.route('/todo/api/item', methods=['POST'])
+@app.route('/inspo/api/item', methods=['POST'])
 @jwt_required
 def add_item():
   data = validate_item(request.get_json())
@@ -268,7 +266,7 @@ def add_item():
     return jsonify({'ok': False, 'message': 'Bad request parameters: {}'.format(data['message'])}), 400
 
 #Update a item by id - done: true or false
-@app.route('/todo/api/item/<ObjectId:item_id>', methods=['PUT'])
+@app.route('/inspo/api/item/<ObjectId:item_id>', methods=['PUT'])
 @jwt_required
 def update_item(item_id):
   item = mongo.db.items
@@ -286,7 +284,7 @@ def update_item(item_id):
   return resp
 
 #Update a item by title - done: true or false
-@app.route('/todo/api/item/complete/<title>', methods=['PUT'])
+@app.route('/inspo/api/item/complete/<title>', methods=['PUT'])
 @jwt_required
 def update_item_by_title(title):
   item = mongo.db.items
@@ -302,7 +300,7 @@ def update_item_by_title(title):
   return resp
 
 #Update a item by id - done: change title, description
-@app.route('/todo/api/item/edit/<ObjectId:item_id>', methods=['PUT'])
+@app.route('/inspo/api/item/edit/<ObjectId:item_id>', methods=['PUT'])
 @jwt_required
 def update_item_info(item_id):
   if item_id:
@@ -317,7 +315,7 @@ def update_item_info(item_id):
     return "Error: no item ID provided", 500
 
 #Delete a item by ID
-@app.route('/todo/api/item/delete/<ObjectId:item_id>', methods=['DELETE'])
+@app.route('/inspo/api/item/delete/<ObjectId:item_id>', methods=['DELETE'])
 @jwt_required
 def delete_item(item_id):
   item = mongo.db.items
@@ -335,7 +333,7 @@ def delete_item(item_id):
   return resp
 
 #Photo upload
-@app.route('/todo/api/photo/<ObjectId:item_id>', methods=['POST'])
+@app.route('/inspo/api/photo/<ObjectId:item_id>', methods=['POST'])
 @jwt_required
 def upload(item_id):
   item = mongo.db.items

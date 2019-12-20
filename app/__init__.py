@@ -7,6 +7,4 @@ if app.config["ENV"] == "production":
 else:
     app.config.from_object("config.DevelopmentConfig")
 
-print 'Current ENV is: ', app.config["ENV"]
-
 from app import views
