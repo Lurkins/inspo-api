@@ -101,7 +101,7 @@ CORS(app, resources={r'/*': {'origins': '*'}})
 def hello():
     return "Welcome to the INSPO API"
 
-# unauthorized response 
+# Unauthorized response 
 @jwt.unauthorized_loader
 def unauthorized_response(callback):
     return jsonify({
