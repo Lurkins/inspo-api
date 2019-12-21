@@ -197,6 +197,7 @@ def get_users_items():
     user = mongo.db.users
     user_name = current_user['username']
     user_obj = user.find_one({'username': user_name})
+    del user_obj['password']
     user_id = user_obj['_id']
     t = item.find({'user_id' : ObjectId(user_id)})
     resp = dumps(t)
@@ -257,6 +258,7 @@ def add_item():
     current_user = get_jwt_identity()
     user_name = current_user['username']
     user_obj = user.find_one({'username': user_name})
+    del user_obj['password']
     user_id = user_obj['_id']
     item_id = item.insert({'title': title, 'description': description, 'done': done, 'user_id': user_id})
     new_item = item.find_one({'_id': item_id })
@@ -276,6 +278,7 @@ def update_item(item_id):
     current_user = get_jwt_identity()
     user_name = current_user['username']
     user_obj = user.find_one({'username': user_name})
+    del user_obj['password']
     user_id = user_obj['_id']
     t = item.find({'user_id' : ObjectId(user_id)})
     resp = dumps(t)
@@ -283,23 +286,7 @@ def update_item(item_id):
     resp = "Error updating item", 500
   return resp
 
-#Update a item by title - done: true or false
-@app.route('/inspo/api/item/complete/<title>', methods=['PUT'])
-@jwt_required
-def update_item_by_title(title):
-  item = mongo.db.items
-  t = item.find_one({'title' : title})
-  if t:
-    item.update({'title' : title}, {"$set": {'done': True}})
-    updated_item = item.find_one({'title': title })
-    resp = {'title' : updated_item['title'], 'description' : updated_item['description'], 'done': updated_item['done']}
-    #Optionally return the individual item:
-    # resp = dumps(t)
-  else:
-    resp = "this item does not exist"
-  return resp
-
-#Update a item by id - done: change title, description
+#Update a item by id - change title, description
 @app.route('/inspo/api/item/edit/<ObjectId:item_id>', methods=['PUT'])
 @jwt_required
 def update_item_info(item_id):
@@ -325,6 +312,7 @@ def delete_item(item_id):
     current_user = get_jwt_identity()
     user_name = current_user['username']
     user_obj = user.find_one({'username': user_name})
+    del user_obj['password']
     user_id = user_obj['_id']
     t = item.find({'user_id' : ObjectId(user_id)})
     resp = dumps(t)
