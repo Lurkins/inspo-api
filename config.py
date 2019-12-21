@@ -1,11 +1,12 @@
 import datetime
+import os
 
 class Config(object):
     DEBUG = False
     TESTING = False
 
     MONGO_DBNAME = 'restdb'
-    MONGO_URI = 'mongodb://localhost:27017/restdb'
+    MONGO_URI = os.environ.get("MONGODB_URI")
     JWT_ACCESS_TOKEN_EXPIRES = datetime.timedelta(days=1)
     
 
