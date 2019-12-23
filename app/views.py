@@ -188,7 +188,7 @@ def user(username):
             return jsonify({'ok': False, 'message': 'Bad request parameters!'}), 400
 
 #Get a user's items
-@app.route('/inspo/api/item/thisuser', methods=['GET'])
+@app.route('/users/items', methods=['GET'])
 @jwt_required
 def get_users_items():
   item = mongo.db.items
@@ -207,7 +207,7 @@ def get_users_items():
     return resp
 
 #Get all the items
-@app.route('/inspo/api/item', methods=['GET'])
+@app.route('/items', methods=['GET'])
 def get_all_items():
   item = mongo.db.items
   try:
@@ -219,7 +219,7 @@ def get_all_items():
     return "Error fetching the items", 500
 
 #Get a single item by ID
-@app.route('/inspo/api/item/id/<ObjectId:item_id>', methods=['GET'])
+@app.route('/items/<ObjectId:item_id>', methods=['GET'])
 def get_one_item_by_id(item_id):
   item = mongo.db.items
   try:
@@ -233,7 +233,7 @@ def get_one_item_by_id(item_id):
     return "Error fetching the item", 500
 
 #Get a single item by title
-@app.route('/inspo/api/item/<title>', methods=['GET'])
+@app.route('/items/<title>', methods=['GET'])
 def get_one_item(title):
   item = mongo.db.items
   t = item.find_one({'title' : title})
@@ -244,7 +244,7 @@ def get_one_item(title):
   return resp
 
 #Post a single item
-@app.route('/inspo/api/item', methods=['POST'])
+@app.route('/items', methods=['POST'])
 @jwt_required
 def add_item():
   data = validate_item(request.get_json())
@@ -268,7 +268,7 @@ def add_item():
     return jsonify({'ok': False, 'message': 'Bad request parameters: {}'.format(data['message'])}), 400
 
 #Update a item by id - done: true or false
-@app.route('/inspo/api/item/<ObjectId:item_id>', methods=['PUT'])
+@app.route('/items/status/<ObjectId:item_id>', methods=['PUT'])
 @jwt_required
 def update_item(item_id):
   item = mongo.db.items
@@ -287,7 +287,7 @@ def update_item(item_id):
   return resp
 
 #Update a item by id - change title, description
-@app.route('/inspo/api/item/edit/<ObjectId:item_id>', methods=['PUT'])
+@app.route('/items/info/<ObjectId:item_id>', methods=['PUT'])
 @jwt_required
 def update_item_info(item_id):
   if item_id:
@@ -302,7 +302,7 @@ def update_item_info(item_id):
     return "Error: no item ID provided", 500
 
 #Delete a item by ID
-@app.route('/inspo/api/item/delete/<ObjectId:item_id>', methods=['DELETE'])
+@app.route('/items/<ObjectId:item_id>', methods=['DELETE'])
 @jwt_required
 def delete_item(item_id):
   item = mongo.db.items
@@ -321,7 +321,7 @@ def delete_item(item_id):
   return resp
 
 #Photo upload
-@app.route('/inspo/api/photo/<ObjectId:item_id>', methods=['POST'])
+@app.route('/items/photos/<ObjectId:item_id>', methods=['POST'])
 @jwt_required
 def upload(item_id):
   item = mongo.db.items
