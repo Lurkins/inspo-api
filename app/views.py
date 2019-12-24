@@ -333,6 +333,5 @@ def upload(item_id):
   return jsonify(uploaded)
   
 @app.route('/file/<filename>')
-@jwt_required
 def file(filename):
   return mongo.send_file(filename)
