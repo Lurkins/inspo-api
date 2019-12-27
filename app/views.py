@@ -187,6 +187,23 @@ def user(username):
         else:
             return jsonify({'ok': False, 'message': 'Bad request parameters!'}), 400
 
+#Get the currently logged in user's info
+@app.route('/users/user', methods=['GET'])
+@jwt_required
+def get_users_user():
+  current_user = get_jwt_identity()
+  if current_user:
+    print current_user
+    user = mongo.db.users
+    user_name = current_user['username']
+    user_obj = user.find_one({'username': user_name})
+    del user_obj['password']
+    resp = dumps(user_obj)
+    return resp
+  else:
+    resp = "Error, unrecognizable token", 500
+    return resp
+
 #Get a user's items
 @app.route('/users/items', methods=['GET'])
 @jwt_required
