@@ -337,15 +337,27 @@ def delete_item(item_id):
     resp = "Error deleting item", 500
   return resp
 
-#Photo upload
+#Item photo upload
 @app.route('/items/photos/<ObjectId:item_id>', methods=['POST'])
 @jwt_required
-def upload(item_id):
+def upload_item_photo(item_id):
   item = mongo.db.items
   if 'file' in request.files:
     file = request.files['file']
     mongo.save_file(file.filename, file)
     item.update({'_id' : item_id}, {"$set": {'image_name': file.filename}})
+    uploaded = file.filename
+  return jsonify(uploaded)
+
+#User photo upload
+@app.route('/users/photos/<ObjectId:user_id>', methods=['POST'])
+@jwt_required
+def upload_user_photo(user_id):
+  user = mongo.db.users
+  if 'file' in request.files:
+    file = request.files['file']
+    mongo.save_file(file.filename, file)
+    user.update({'_id' : user_id}, {"$set": {'image_name': file.filename}})
     uploaded = file.filename
   return jsonify(uploaded)
   
