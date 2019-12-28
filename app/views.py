@@ -116,7 +116,7 @@ def register():
       data = data['data']
       data['password'] = flask_bcrypt.generate_password_hash(data['password'])
       inserted_id = mongo.db.users.insert_one(data).inserted_id
-      user = mongo.db.users.find_one({'_id': inserted_id}, {"_id": 0})
+      user = mongo.db.users.find_one({'_id': inserted_id})
       del user['password']
       access_token = create_access_token(identity=data)
       refresh_token = create_refresh_token(identity=data)
@@ -133,7 +133,7 @@ def auth_user():
     data = validate_user(request.get_json())
     if data['ok']:
         data = data['data']
-        user = mongo.db.users.find_one({'username': data['username']}, {"_id": 0})
+        user = mongo.db.users.find_one({'username': data['username']})
         if user and flask_bcrypt.check_password_hash(user['password'], data['password']):
             del user['password']
             access_token = create_access_token(identity=data)
