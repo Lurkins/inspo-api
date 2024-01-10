@@ -4,11 +4,6 @@ INSPO API is a python project built primarily to serve as the backend for the fu
 
 <img src="https://upload.wikimedia.org/wikipedia/commons/4/4a/Python3-powered_hello-world.svg" width="300">
 <img src="https://upload.wikimedia.org/wikipedia/commons/3/3c/Flask_logo.svg" width="300">
-<img src="https://upload.wikimedia.org/wikipedia/en/4/45/MongoDB-Logo.svg" width="300">
-
-## Deployed here:
-
-https://inspo-api.herokuapp.com/
 
 ## Endpoints: 
 
